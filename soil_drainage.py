@@ -20,7 +20,7 @@ def main():
     (froot, soil_layer_max) = calc_rooting_fraction()
     layered_extraction_model(soil_layer_max, froot)
 
-def layered_extraction_model(soil_layer_thickness, froot):
+def layered_extraction_model(layer_thickness, froot):
 
     n_days = 365
     n_layers = 6
@@ -46,7 +46,7 @@ def layered_extraction_model(soil_layer_thickness, froot):
     ssat = 0.398
 
 
-    # initialise layers to max
+    # initialise layers to max, volumetric water content (mm3 mm-3)
     layer_max = 0.9999 * ssat
     sw = np.zeros(n_layers)
     for i in range(n_layers):
@@ -64,30 +64,36 @@ def layered_extraction_model(soil_layer_thickness, froot):
         extracted = 0.0
 
         diff = 0.0
-        xxd = 0.0
+        xx = 0.0
         for j in range(n_layers):
 
             # Update SW layer with draining water
 
             # Draining water is more than the layer can hold
-            if sw[j] + (throughfall / soil_layer_thickness[j]) > layer_max:
+            if sw[j] + (throughfall / layer_thickness[j]) > layer_max:
                 sw[j] = layer_max
 
             # Fill up the layer with the drained water
             else:
-                sw[j] += throughfall / soil_layer_thickness[j]
+                sw[j] += throughfall / layer_thickness[j]
 
             # Extract water for transpiration from the layer
-            xx = transpiration * froot[j] + diff
-            diff = max(0.0, sw[j] - swilt) * soil_layer_thickness[j]
-            xxd = xx - diff
+            trans_from_layer = transpiration * froot[j] + diff
+            diff = max(0.0, sw[j] - swilt) * layer_thickness[j]
+            xx = trans_from_layer - diff
 
-            if xxd > 0.0:
-                sw[j] -= diff / soil_layer_thickness[j]
-                diff = xxd
+            # There isn't enough water in this layer to meet out layer
+            # transpiration demands, so extract the maximum we can and save
+            # the missing amount to take from the next layer.
+            if xx > 0.0:
+                # turn back into volumetric water content (mm3 mm-3)
+                sw[j] -= diff / layer_thickness[j]
+                diff = xx
 
+            # We can take all the required transpiration from this layer
             else:
-                sw[j] -= xx / soil_layer_thickness[j]
+                # turn back into volumetric water content (mm3 mm-3)
+                sw[j] -= trans_from_layer / layer_thickness[j]
                 diff = 0.0
 
             # store for plotting purposes
@@ -129,9 +135,9 @@ def calc_rooting_fraction():
 
     # Use CABLE's sizing, but rescale over 2m as opposed to 4.6m
     #proportions = zse / np.sum(zse)
-    #soil_layer_thickness = 2.0 * proportions
-    #soil_layer_thickness = np.array([ 0.01, 0.025, 0.067, 0.178, 0.472, 1.248])
-    soil_layer_thickness = np.array([0.022, 0.058, 0.154, 0.409, 1.085, 2.872])
+    #layer_thickness = 2.0 * proportions
+    #layer_thickness = np.array([ 0.01, 0.025, 0.067, 0.178, 0.472, 1.248])
+    layer_thickness = np.array([0.022, 0.058, 0.154, 0.409, 1.085, 2.872])
 
     # Calculate froot from using rootbeta and soil depth
     # - Jackson et al. (1996) Oceologica, 108:389-411
@@ -141,20 +147,20 @@ def calc_rooting_fraction():
 
     total_depth = 0.0
     for i in range(n_layers):
-        total_depth += soil_layer_thickness[i] * m_2_cm
+        total_depth += layer_thickness[i] * m_2_cm
         froot[i] = min(1.0, 1.0 - root_beta**total_depth)
 
     for i in range(n_layers-1, 0, -1):
         #print (i)
         froot[i] -= froot[i-1]
 
-    #plt.plot(froot, np.cumsum(soil_layer_thickness)*-1)
+    #plt.plot(froot, np.cumsum(layer_thickness)*-1)
     #plt.ylabel("Depth (m)")
     #plt.xlabel("Fraction of roots [0-1]")
     #plt.show()
     #sys.exit()
 
-    return (froot, soil_layer_thickness * m_2_mm)
+    return (froot, layer_thickness * m_2_mm)
 
 
 
