@@ -46,7 +46,7 @@ def layered_extraction_model(layer_thickness, froot):
     # initialise layers to max, volumetric water content (mm3 mm-3)
     layer_max = 0.9999 * ssat
     sw = np.ones(n_layers) * layer_max
-    
+
     # just for plotting
     store = np.zeros((n_days, n_layers))
 
@@ -127,7 +127,7 @@ def calc_rooting_fraction():
     # Use CABLE's sizing, but rescaled over 2m as opposed to 4.6m
     #proportions = zse / np.sum(zse)
     #layer_thickness = 2.0 * proportions
-    layer_thickness = np.array([ 0.01, 0.025, 0.067, 0.178, 0.472, 1.248])
+    layer_thickness = np.array([0.01, 0.025, 0.067, 0.178, 0.472, 1.248])
 
     # Calculate froot from using rootbeta and soil depth
     # - Jackson et al. (1996) Oceologica, 108:389-411
