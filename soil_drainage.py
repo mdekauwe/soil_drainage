@@ -55,10 +55,6 @@ def layered_extraction_model(layer_thickness, froot):
     for i in range(n_days):
 
         throughfall = ppt[i] - canopy_evap
-        delta = throughfall - transpiration #- soil_evap
-
-        drainage = 0.0
-        extracted = 0.0
 
         # water req from the next layer
         diff = 0.0
