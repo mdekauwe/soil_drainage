@@ -39,7 +39,7 @@ def run_tipping_bucket_model(soil_layer_max):
     # ignore soil & canopy evap just to make this simple
     soil_evap = 0.0
     canopy_evap = 0.0
-    transpiration = 1.5 # mm d-1
+    transpiration = 3.0 # mm d-1
 
     # just for plotting
     store = np.zeros((n_days, n_layers))
@@ -82,7 +82,7 @@ def run_tipping_bucket_model(soil_layer_max):
     fig = plt.figure(figsize=(9,10))
     ax = fig.add_subplot(n_layers+1,1,1)
     ax.plot(ppt, color="red", ls="-")
-
+    ax.set_ylabel("PPT (mm)")
     count = 2
     for i in range(n_layers):
         ax = fig.add_subplot(n_layers+1,1,count)
@@ -91,7 +91,7 @@ def run_tipping_bucket_model(soil_layer_max):
 
         ax.set_xlim(0, 365)
         ax.set_ylim(0, soil_layer_max[i]+(soil_layer_max[i]*0.1))
-
+        ax.set_ylabel("SW layer %d" % (i+1))
         if count < 6:
             plt.setp(ax.get_xticklabels(), visible=False)
 
