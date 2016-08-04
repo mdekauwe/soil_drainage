@@ -17,8 +17,8 @@ __email__   = "mdekauwe@gmail.com"
 
 def main():
 
-    (froot, soil_layer_max) = calc_rooting_fraction()
-    layered_extraction_model(soil_layer_max, froot)
+    (froot, layer_thickness) = calc_rooting_fraction()
+    layered_extraction_model(layer_thickness, froot)
 
 def layered_extraction_model(layer_thickness, froot):
 
