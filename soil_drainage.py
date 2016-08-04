@@ -63,8 +63,8 @@ def layered_extraction_model(layer_thickness, froot):
         drainage = 0.0
         extracted = 0.0
 
+        # water req from the next layer
         diff = 0.0
-        xx = 0.0
         for j in range(n_layers):
 
             # Update SW layer with draining water
@@ -77,18 +77,18 @@ def layered_extraction_model(layer_thickness, froot):
             else:
                 sw[j] += throughfall / layer_thickness[j]
 
-            # Extract water for transpiration from the layer
-            trans_from_layer = transpiration * froot[j] + diff
-            diff = max(0.0, sw[j] - swilt) * layer_thickness[j]
-            xx = trans_from_layer - diff
+            # Extract water for transpiration from the layer + water we
+            # couldn't extract from the previous layer
+            trans_from_layer = (transpiration * froot[j]) + diff
+            max_trans_in_layer = max(0.0, sw[j] - swilt) * layer_thickness[j]
+            diff = trans_from_layer - max_trans_in_layer
 
             # There isn't enough water in this layer to meet out layer
             # transpiration demands, so extract the maximum we can and save
             # the missing amount to take from the next layer.
-            if xx > 0.0:
+            if diff > 0.0:
                 # turn back into volumetric water content (mm3 mm-3)
-                sw[j] -= diff / layer_thickness[j]
-                diff = xx
+                sw[j] -= max_trans_in_layer / layer_thickness[j]
 
             # We can take all the required transpiration from this layer
             else:
