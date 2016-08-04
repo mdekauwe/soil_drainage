@@ -19,6 +19,17 @@ def main():
 
     soil_layers = np.zeros(10)
 
+    # soil layer thickness in CABLE (m)
+    zse = np.array([0.022, 0.058, 0.154, 0.409, 1.085, 2.872])
+
+    # Use CABLE's sizing, but rescale over 2m as opposed to 4.6m
+    proportions = zse / np.sum(zse)
+    soil_layer_thickness = 2.0 * proportions
+    
+
+
+    # fraction of root in each soil layer
+    #froot
 
 
 if __name__ == "__main__":
