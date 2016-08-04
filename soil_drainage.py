@@ -21,7 +21,7 @@ def main():
     #tipping_bucket_model(soil_layer_max, froot)
     layered_extraction_model(soil_layer_max, froot)
 
-def layered_extraction_model(soil_layer_max, froot):
+def layered_extraction_model(soil_layer_thickness, froot):
 
     n_days = 365
     n_layers = 6
@@ -48,9 +48,10 @@ def layered_extraction_model(soil_layer_max, froot):
 
 
     # initialise layers to max
+    layer_max = 0.9999 * ssat
     sw = np.zeros(n_layers)
     for i in range(n_layers):
-        sw[i] = 0.9999 * ssat
+        sw[i] = layer_max
 
 
 
@@ -69,45 +70,28 @@ def layered_extraction_model(soil_layer_max, froot):
         xxd = 0.0
         for j in range(n_layers):
 
-            xx = transpiration * froot[j] + diff
-            diff = max(0.0, sw[j] - swilt) * soil_layer_max[j]
+            # Update SW layer with draining water
 
+            # Draining water is more than the layer can hold
+            if sw[j] + (throughfall / soil_layer_thickness[j]) > layer_max:
+                sw[j] = layer_max
+
+            # Fill up the layer with the drained water
+            else:
+                sw[j] += throughfall / soil_layer_thickness[j]
+
+            # Extract water for transpiration from the layer
+            xx = transpiration * froot[j] + diff
+            diff = max(0.0, sw[j] - swilt) * soil_layer_thickness[j]
             xxd = xx - diff
 
-
             if xxd > 0.0:
-
-                sw[j] -= diff / soil_layer_max[j]
+                sw[j] -= diff / soil_layer_thickness[j]
                 diff = xxd
 
             else:
-
-                sw[j] -= xx / soil_layer_max[j]
-                diff = xxd
-
-
-
-            """
-            print(xx, diff, sw[j]/soil_layer_max[j])
-            sys.exit()
-            # if we need more water than we have available, only offer up what
-            # the layer held
-            if sw[j] + delta < 0.0:
-                extracted += sw[j]
-                sw[j] = 0.0
-
-            # if we have more water than we can store, tip excess into the
-            # next layer
-            elif sw[j] + delta > soil_layer_max[j]:
-                drainage += (sw[j] + delta) - soil_layer_max[j]
-                sw[j] = soil_layer_max[j]
-
-            # the layer can meet the demands for water comfortably
-            else:
-                extracted += delta
-                sw[j] += delta
-                delta = 0.0
-            """
+                sw[j] -= xx / soil_layer_thickness[j]
+                diff = 0.0
 
             # store for plotting purposes
             store[i,j] = sw[j]
@@ -117,6 +101,7 @@ def layered_extraction_model(soil_layer_max, froot):
     ax = fig.add_subplot(n_layers+1,1,1)
     ax.plot(ppt, color="red", ls="-")
     ax.set_ylabel("PPT (mm)")
+    plt.setp(ax.get_xticklabels(), visible=False)
     count = 2
     for i in range(n_layers):
         ax = fig.add_subplot(n_layers+1,1,count)
@@ -124,9 +109,10 @@ def layered_extraction_model(soil_layer_max, froot):
         ax.plot(store[:,i], color="royalblue", ls="-")
 
         ax.set_xlim(0, 365)
-        #ax.set_ylim(0, soil_layer_max[i]+(soil_layer_max[i]*0.1))
+        ax.set_ylim(swilt, 0.5)
+        ax.locator_params(nbins=5, axis="y")
         ax.set_ylabel("SW layer %d" % (i+1))
-        if count < 6:
+        if count < 7:
             plt.setp(ax.get_xticklabels(), visible=False)
 
         count += 1
