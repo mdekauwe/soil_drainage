@@ -38,9 +38,7 @@ def run_tipping_bucket_model(soil_layer_max):
     soil_evap = 0.0 # mm  d-1
 
     # initialise layers to max
-    sw = np.zeros(n_layers)
-    sw = soil_layer_max
-
+    sw = soil_layer_max.copy()
 
     # no canopy evaporation
     throughfall = ppt
@@ -52,36 +50,39 @@ def run_tipping_bucket_model(soil_layer_max):
         drainage = 0.0
         extracted = 0.0
         water_needed = transpiration[i]
+
+        delta = throughfall[i] - water_needed
         for j in range(n_layers):
 
-            if j == 0:
-                delta = throughfall[i] - water_needed
-            else:
-                delta = drainage - water_needed
-
-            if j == 0:
-                print(delta, sw[j])
 
             # if we need more water than we have available, only offer up what
             # the layer held
             if sw[j] + delta < 0.0:
-                extracted += delta - soil_layer_max[j]
+                #print("here")
+                delta += soil_layer_max[j]
                 sw[j] = 0.0
 
             # if we have more water than we can store, tip excess into the
             # next layer
             elif sw[j] + delta > soil_layer_max[j]:
+                #print(sw[j] , delta, soil_layer_max[j])
                 drainage += (sw[j] + np.abs(delta)) - soil_layer_max[j]
+                delta += drainage
                 sw[j] = soil_layer_max[j]
+
 
             else:
                 sw[j] += delta
+
+
                 # this isnt' right
                 extracted += transpiration[i]
 
             water_needed -= extracted
             store[i,j] = sw[j]
 
+            # update delta
+            delta = throughfall[i] - water_needed
 
         #if extractable > transpiration[i]:
         #    transpiration[i] = extractable
