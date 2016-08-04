@@ -19,6 +19,15 @@ def main():
 
     (froot, soil_layer_thickness) = calc_rooting_fraction()
 
+    #for i in range(n_days):
+    n_days = 365
+
+    # generate some vaguely sensible rainfall inputs
+    rainfall_max = 30.0 # arbitary
+    np.random.seed(0)
+    ppt = np.random.beta(0.04, 1.0, n_days) * (rainfall_max - 0.0)
+    plt.plot(ppt)
+    plt.show()
 
 def calc_rooting_fraction():
 
