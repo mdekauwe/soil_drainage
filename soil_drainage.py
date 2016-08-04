@@ -45,10 +45,8 @@ def layered_extraction_model(layer_thickness, froot):
 
     # initialise layers to max, volumetric water content (mm3 mm-3)
     layer_max = 0.9999 * ssat
-    sw = np.zeros(n_layers)
-    for i in range(n_layers):
-        sw[i] = layer_max
-
+    sw = np.ones(n_layers) * layer_max
+    
     # just for plotting
     store = np.zeros((n_days, n_layers))
 
