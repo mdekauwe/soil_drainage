@@ -71,13 +71,9 @@ def tipping_bucket_model(soil_layer_max):
                 sw[j] += delta
                 delta = 0.0
 
-            # update delta
-            #delta = min(0.0, delta - extracted)
-
             # store for plotting purposes
             store[i,j] = sw[j]
-        #print(delta, extracted)
-        #sys.exit()
+
 
     fig = plt.figure(figsize=(9,10))
     ax = fig.add_subplot(n_layers+1,1,1)
