@@ -30,7 +30,7 @@ def run_tipping_bucket_model(soil_layer_max):
 
     # generate some vaguely sensible rainfall inputs
     np.random.seed(0)
-    rainfall_max = 10.0 # arbitary
+    rainfall_max = 50.0 # arbitary
     rainfall_min = 0.0
     ppt = np.random.beta(0.04, 1.0, n_days) * (rainfall_max - rainfall_min)
     #plt.plot(ppt)
@@ -39,18 +39,18 @@ def run_tipping_bucket_model(soil_layer_max):
     # ignore soil & canopy evap just to make this simple
     soil_evap = 0.0
     canopy_evap = 0.0
-    transpiration = 0.5 # mm d-1
+    transpiration = 1.5 # mm d-1
 
     # just for plotting
     store = np.zeros((n_days, n_layers))
 
     for i in range(n_days):
-        drainage = 0.0
-        extracted = 0.0
 
         throughfall = ppt[i] - canopy_evap
         delta = throughfall - transpiration - soil_evap
 
+        drainage = 0.0
+        extracted = 0.0
         for j in range(n_layers):
 
             # if we need more water than we have available, only offer up what
@@ -64,24 +64,28 @@ def run_tipping_bucket_model(soil_layer_max):
             elif sw[j] + delta > soil_layer_max[j]:
                 drainage += (sw[j] + delta) - soil_layer_max[j]
                 sw[j] = soil_layer_max[j]
+
+            # the layer can meet the demands for water comfortably
             else:
-                sw[j] += delta
                 extracted += delta
+                sw[j] += delta
+                delta = 0.0
 
             # update delta
-            delta += drainage - extracted
-
+            #delta = min(0.0, delta - extracted)
 
             # store for plotting purposes
             store[i,j] = sw[j]
+        #print(delta, extracted)
+        #sys.exit()
 
+    fig = plt.figure(figsize=(9,10))
+    ax = fig.add_subplot(n_layers+1,1,1)
+    ax.plot(ppt, color="red", ls="-")
 
-
-
-    fig = plt.figure(figsize=(6,10))
-    count = 1
+    count = 2
     for i in range(n_layers):
-        ax = fig.add_subplot(n_layers,1,count)
+        ax = fig.add_subplot(n_layers+1,1,count)
         ax.axhline(y=soil_layer_max[i], ls="--", color="k")
         ax.plot(store[:,i], color="royalblue", ls="-")
 
