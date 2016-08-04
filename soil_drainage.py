@@ -58,11 +58,13 @@ def run_tipping_bucket_model(soil_layer_max):
                 delta = throughfall[i] - water_needed
             else:
                 delta = drainage - water_needed
-            #if j == 0:
-            #    print(np.abs(delta), sw[j])
+
+            if j == 0:
+                print(delta, sw[j])
+
             # if we need more water than we have available, only offer up what
             # the layer held
-            if np.abs(delta) > sw[j]:
+            if sw[j] + delta < 0.0:
                 extracted += delta - soil_layer_max[j]
                 sw[j] = 0.0
 
@@ -73,8 +75,8 @@ def run_tipping_bucket_model(soil_layer_max):
                 sw[j] = soil_layer_max[j]
 
             else:
-
                 sw[j] += delta
+                # this isnt' right
                 extracted += transpiration[i]
 
             water_needed -= extracted
