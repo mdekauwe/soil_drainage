@@ -17,8 +17,14 @@ __email__   = "mdekauwe@gmail.com"
 
 def main():
 
+    (froot, soil_layer_thickness) = calc_rooting_fraction()
+
+
+def calc_rooting_fraction():
+
     m_2_cm = 100.0
     n_layers = 6
+    root_beta = 0.95 #[0.7-1.0]
     soil_layers = np.zeros(n_layers)
 
     # Soil layer thickness in CABLE (m)
@@ -27,26 +33,24 @@ def main():
     # Use CABLE's sizing, but rescale over 2m as opposed to 4.6m
     proportions = zse / np.sum(zse)
     soil_layer_thickness = 2.0 * proportions
-    print(soil_layer_thickness)
+
     # Calculate froot from using rootbeta and soil depth
     # - Jackson et al. (1996) Oceologica, 108:389-411
 
     # fraction of root in each soil layer
     froot = np.zeros(n_layers)
 
-    root_beta = 0.95 #[0.7-1.0]
     total_depth = 0.0
     for i in range(n_layers):
         total_depth += soil_layer_thickness[i] * m_2_cm
         froot[i] = min(1.0, 1.0 - root_beta**total_depth)
-
 
     #plt.plot(np.cumsum(soil_layer_thickness), froot)
     #plt.xlabel("Depth (m)")
     #plt.ylabel("Fraction of roots [0-1]")
     #plt.show()
 
-
+    return (froot, soil_layer_thickness)
 
 
 
