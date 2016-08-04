@@ -25,8 +25,6 @@ def layered_extraction_model(layer_thickness, froot):
     n_days = 365
     n_layers = 6
 
-
-
     # generate some vaguely sensible rainfall inputs
     np.random.seed(0)
     rainfall_max = 50.0 # arbitary
@@ -40,11 +38,10 @@ def layered_extraction_model(layer_thickness, froot):
     canopy_evap = 0.0
     transpiration = 3.0 # mm d-1
 
-    # Coarse sand/Loamy sand
+    # Coarse sand / Loamy sand
     swilt = 0.072
     sfc = 0.301
     ssat = 0.398
-
 
     # initialise layers to max, volumetric water content (mm3 mm-3)
     layer_max = 0.9999 * ssat
