@@ -26,58 +26,70 @@ def run_tipping_bucket_model(soil_layer_max):
     n_layers = 6
 
     # generate some vaguely sensible rainfall inputs
-    rainfall_max = 30.0 # arbitary
+    rainfall_max = 10.0 # arbitary
     np.random.seed(0)
     ppt = np.random.beta(0.04, 1.0, n_days) * (rainfall_max - 0.0)
-    transpiration = np.ones(n_days) * 5.0 # mm d-1
+    transpiration = np.ones(n_days) * 1.0 # mm d-1
+
+    #plt.plot(ppt)
+    #plt.show()
 
     # ignore soil evap just to make this simple
     soil_evap = 0.0 # mm  d-1
 
     # initialise layers to max
-    sw = np.zeros((n_days, n_layers))
-    for i in range(n_layers):
-        sw[:,i] = soil_layer_max[i]
+    sw = np.zeros(n_layers)
+    sw = soil_layer_max
 
 
     # no canopy evaporation
     throughfall = ppt
 
+    # just for plotting
+    store = np.zeros((n_days, n_layers))
 
     for i in range(n_days):
         drainage = 0.0
-        extractable = 0.0
+        extracted = 0.0
+        water_needed = transpiration[i]
         for j in range(n_layers):
 
             if j == 0:
-                delta = throughfall[i] - transpiration[i]
+                delta = throughfall[i] - water_needed
             else:
-                delta = drainage - transpiration[i]
-
+                delta = drainage - water_needed
+            #if j == 0:
+            #    print(np.abs(delta), sw[j])
             # if we need more water than we have available, only offer up what
             # the layer held
-            if delta > sw[i,j]:
-                extractable += delta - soil_layer_max[j]
-                sw[i,j] = 0.0
+            if np.abs(delta) > sw[j]:
+                extracted += delta - soil_layer_max[j]
+                sw[j] = 0.0
 
             # if we have more water than we can store, tip excess into the
             # next layer
-            elif sw[i,j] + delta > soil_layer_max[j]:
-                drainage += sw[i,j] - soil_layer_max[j]
-                sw[i,j] = soil_layer_max[j]
+            elif sw[j] + delta > soil_layer_max[j]:
+                drainage += (sw[j] + np.abs(delta)) - soil_layer_max[j]
+                sw[j] = soil_layer_max[j]
 
             else:
-                sw[i,j] += delta
 
-        if extractable > transpiration[i]:
-            transpiration[i] = extractable
+                sw[j] += delta
+                extracted += transpiration[i]
+
+            water_needed -= extracted
+            store[i,j] = sw[j]
+
+
+        #if extractable > transpiration[i]:
+        #    transpiration[i] = extractable
 
     fig = plt.figure(figsize=(6,10))
     count = 1
     for i in range(n_layers):
         ax = fig.add_subplot(n_layers,1,count)
         ax.axhline(y=soil_layer_max[i], ls="--", color="k")
-        ax.plot(np.arange(n_days), sw[:,i], "r-")
+        ax.plot(store[:,i], color="royalblue", ls="-")
 
         ax.set_xlim(0, 365)
         ax.set_ylim(0, soil_layer_max[i]+(soil_layer_max[i]*0.1))
