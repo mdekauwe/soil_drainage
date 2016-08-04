@@ -130,7 +130,7 @@ def calc_rooting_fraction():
     # Soil layer thickness in CABLE (m)
     #zse = np.array([0.022, 0.058, 0.154, 0.409, 1.085, 2.872])
 
-    # Use CABLE's sizing, but rescale over 2m as opposed to 4.6m
+    # Use CABLE's sizing, but rescaled over 2m as opposed to 4.6m
     #proportions = zse / np.sum(zse)
     #layer_thickness = 2.0 * proportions
     #layer_thickness = np.array([ 0.01, 0.025, 0.067, 0.178, 0.472, 1.248])
