@@ -18,9 +18,9 @@ __email__   = "mdekauwe@gmail.com"
 def main():
 
     (froot, soil_layer_max) = calc_rooting_fraction()
-    run_tipping_bucket_model(soil_layer_max)
+    tipping_bucket_model(soil_layer_max)
 
-def run_tipping_bucket_model(soil_layer_max):
+def tipping_bucket_model(soil_layer_max):
 
     n_days = 365
     n_layers = 6
